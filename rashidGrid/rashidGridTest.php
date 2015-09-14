@@ -72,12 +72,12 @@
 				<ul>
 
 					<li class="rGridHeadRow">
-						<ul >
-							<li>Sr.</li>
-							<li>Name </li>
-							<li>Type</li>
-							<li>Status</li>
-							<li>Action</li>
+						<ul>
+							<li class="rGridCols" data-col-name="" col-type="sr.">Sr.</li>
+							<li class="rGridCols" data-col-name="Name" data-sort-type="ASC" col-type="listData">Name </li>
+							<li class="rGridCols" data-col-name="Type" data-sort-type="DESC" col-type="listData">Type</li>
+							<li class="rGridCols" data-col-name="Status" data-sort-type="ASC" col-type="listData">Status</li>
+							<li class="rGridCols" data-col-name="" col-type="action">Action</li>
 						</ul>
 					</li>
 

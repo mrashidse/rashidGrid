@@ -9,12 +9,23 @@
 (function($) {
 	var RashidGrid = function(element, options){
 
+		/**
+		 * Constant Variable
+		 */
+		var SORT_UP = 'ASC';
+		var SORT_DOWN = 'DESC';
+
+
+
 		var rgElement = $(element);
 		var rgObj = this;
 		var _rowBeforSelectionStyle = [];
 		var _selectedRowCss = '.rGirdSelectedRow';
 		var _selectedRowsElmt = $(_selectedRowCss);
 		var _bodyRowData = new Array();
+		var _colCssName = '.rGridCols';
+		var _rColTag = 'ul li';
+		var _sortType = SORT_UP; 
 		
 
 		//***Default Options.
@@ -35,19 +46,15 @@
 		    isSortingOn: true,
 		    isScrollingOn: true,
 			filterFieldsClassName: '.rGridFilterFields',
-			columsClassName: '.rGridCols',
+			hColCssName: _colCssName,
+			rowColContainingTag: _rColTag,
+			isAjaxSorting: false,
 			setBodyRowData: function(data){
 				// this._bodyRowData = data;
 				this.setSelectedRowsData(data);
 			},
-			beforeCreate: function(){
+			beforeInitialize: function(){
 
-			},
-			_create: function(s) {
-
-				if(s.isApplyOddEvenColor){
-					applyOddEvenStyle();
-				}
 			},
 			getSelectedRowsData: function(){
 		        return rgObj.getSelectedRowsData()
@@ -65,12 +72,14 @@
 	   //local Variables deleration 
 		var s = settings;
 		var _tblBodyRowElements = $(s.tblBodyRowClassName);
+		var _tblHeadRowElement = $(s.tblHeadRow);
+		var _tblHeadRowColsElement = $(s.tblHeadRow + ' ' + s.hColCssName);
 
 
 		s.tblBodyRowOdd = s.tblBodyRowOdd.toLowerCase();
 		s.tblBodyRowEven = s.tblBodyRowEven.toLowerCase();
 		s.tblBodySelectedRowColor = s.tblBodySelectedRowColor.toLowerCase();
-
+		_rColTag = s.rowColContainingTag;
 
 		/**
 		 * applyOddEvenStyle | This function will apply odd/even row styling
@@ -256,24 +265,123 @@
 			console.log('selectAllRows method called!');
 		};
 
+		/**
+		 * _manageSortingCols |  
+		 *
+		 */
+		var _manageSortingCols = function(elment, i){
+			// _tblHeadRowColsElement.each(function(){
+			var colSortName = elment.data('col-name');
+			var colSortType = elment.data('sort-type');
+			console.log(elment.data('sort-type'));
+			if(typeof colSortType !== 'undefined'){
+				colSortType = colSortType.toUpperCase();
+
+				switch(colSortType){
+					case SORT_UP:
+						elment.data('sort-type',SORT_DOWN);
+					break;
+					case SORT_DOWN:
+						elment.data('sort-type',SORT_UP);
+					break;
+					default:
+						elment.data('sort-type',_sortType);
+					break
+				}
+			}
+			console.log(elment.data('sort-type'));
+			if(typeof colSortName !== 'undefined' && colSortName !== '' ){
+				if(s.isAjaxSorting){
+					
+				}else{
+					sortOnClientSide(elment,i);
+				}
+			}
+			// });
+		};
+
 
 		/**
-		 * Table-Body-Row Click Event Perform here
+		 * sortOnClientSide |  
+		 *
 		 */
-        $(s.tblContainer).on('click', s.tblBodyRowClassName, function(){
-        	var e = $(this);
-        	var eInx = e.index();
-        	executeOnClickOfGridBodyRow(e, eInx);
-        });
+		var sortOnClientSide = function(elm, i){
+			var colSortName = elm.data('col-name');
+			var colSortType = elm.data('sort-type');
+			_tblBodyRowElements.each(function(j,e){
+
+				var el = $(e);
+				el.find(_rColTag).each(function(k,eCols){
+					// if(k === i){
+						console.log(eCols);
+						$(eCols).each(function(n,col){
+							console.log(col.text);
+						});
+					// }
+				});
+			});
+		};
+
+
+		
+		/**
+		 * _eventsBindings |  This method will manage events bindings
+		 *
+		 */
+		var _eventsBindings = function(){
+			/**
+			 * Table-Head-Row-Col Click Event Perform here (This is hanlde sorting functionality)
+			 */
+	        $(s.tblContainer).on('click', s.hColCssName, function(){
+	        	var e = $(this);
+	        	var eInx = e.index();
+	        	_manageSortingCols(e, eInx);
+	        });
+
+
+	        /**
+			 * Table-Body-Row Click Event Perform here
+			 */
+	        $(s.tblContainer).on('click', s.tblBodyRowClassName, function(){
+	        	var e = $(this);
+	        	var eInx = e.index();
+	        	executeOnClickOfGridBodyRow(e, eInx);
+	        });
+		};
+		/*
+		
+
+		/**
+		 * _beforeInitialize |  This method will manage events bindings
+		 *
+		 */
+		var _beforeInitialize = function() {
+			s.beforeInitialize();
+		};
+
+
+		/**
+		 * _initialize |  This method will create the pluging core functions
+		 *
+		 */
+		var _initialize = function() {
+			_beforeInitialize();
+			
+			//apply odd/even style
+			if(s.isApplyOddEvenColor){
+				applyOddEvenStyle();
+			}
+
+			//event bindings
+			_eventsBindings();
+		};
 
 
 
 		/**
 		 * Execute Functions Here
 		 */
-		s.beforeCreate();
-		s._create(s);
-
+		_initialize();
 
 	};
 
