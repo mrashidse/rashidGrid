@@ -72,11 +72,11 @@
 					<table>
 						<thead class="rGridTblHeaderContainer">
 							<tr class="rGridHeadRow">
-								<th class="rGridCols" data-col-name="" col-type="sr.">Sr.</th>
-								<th class="rGridCols" data-col-name="Name" data-sort-type="ASC" col-type="listData">Name</th>
-								<th class="rGridCols" data-col-name="Type" data-sort-type="ASC" col-type="listData">Type</th>
-								<th class="rGridCols" data-col-name="Status" data-sort-type="ASC" col-type="listData">Status</th>
-								<th class="rGridCols" data-col-name="" col-type="action">Action</th>
+								<th class="rGridHeadCols" data-sortable="1" data-col-name="" col-type="sr.">Sr.</th>
+								<th class="rGridHeadCols" data-sortable="1" data-col-name="Name" data-sort-type="ASC" col-type="listData">Name</th>
+								<th class="rGridHeadCols" data-sortable="1" data-col-name="Type" data-sort-type="ASC" col-type="listData">Type</th>
+								<th class="rGridHeadCols" data-col-name="Status" data-sort-type="ASC" col-type="listData">Status</th>
+								<th class="rGridHeadCols" data-col-name="" col-type="action">Action</th>
 							</tr>
 						</thead>
 						<tbody class="rGridTblBodyContainer">

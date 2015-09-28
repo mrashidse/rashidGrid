@@ -6,6 +6,85 @@
  * @prerqusites: jQuery lib
  */
 
+
+
+
+ /****************************************************** [ Start sortElements ] ***********************************************************/
+  /**
+ * jQuery.fn.sortElements
+ * --------------
+ * @author James Padolsey (http://james.padolsey.com)
+ * @version 0.11
+ * @updated 18-MAR-2010
+ * --------------
+ * @param Function comparator:
+ *   Exactly the same behaviour as [1,2,3].sort(comparator)
+ *   
+ * @param Function getSortable
+ *   A function that should return the element that is
+ *   to be sorted. The comparator will run on the
+ *   current collection, but you may want the actual
+ *   resulting sort to occur on a parent or another
+ *   associated element.
+ *   
+ *   E.g. $('td').sortElements(comparator, function(){
+ *      return this.parentNode; 
+ *   })
+ *   
+ *   The <td>'s parent (<tr>) will be sorted instead
+ *   of the <td> itself.
+ */
+jQuery.fn.sortElements = (function(){
+    
+    var sort = [].sort;
+    
+    return function(comparator, getSortable) {
+        
+        getSortable = getSortable || function(){return this;};
+        
+        var placements = this.map(function(){
+            
+            var sortElement = getSortable.call(this),
+                parentNode = sortElement.parentNode,
+                
+                // Since the element itself will change position, we have
+                // to have some way of storing it's original position in
+                // the DOM. The easiest way is to have a 'flag' node:
+                nextSibling = parentNode.insertBefore(
+                    document.createTextNode(''),
+                    sortElement.nextSibling
+                );
+            
+            return function() {
+                
+                if (parentNode === this) {
+                    throw new Error(
+                        "You can't sort elements if any one is a descendant of another."
+                    );
+                }
+                
+                // Insert before flag:
+                parentNode.insertBefore(this, nextSibling);
+                // Remove flag:
+                parentNode.removeChild(nextSibling);
+                
+            };
+            
+        });
+       
+        return sort.call(this, comparator).each(function(i){
+            placements[i].call(getSortable.call(this));
+        });
+        
+    };
+    
+})();
+/****************************************************** [ End sortElements ] ***********************************************************/
+
+
+
+/******************************************************* [ Start RashidGrid ] **********************************************************/
+
 (function($) {
     var RashidGrid = function(win, doc, element, options) {
 
@@ -23,7 +102,7 @@
         var _selectedRowCss = '.rGirdSelectedRow';
         var _selectedRowsElmt = $(_selectedRowCss);
         var _bodyRowData = new Array();
-        var _colCssName = '.rGridCols';
+        var _colCssName = '.rGridHeadCols';
         var _rColTag = 'ul li';
         var _sortType = SORT_UP;
 
@@ -40,6 +119,8 @@
             tblHeadRowClr: '#999',
             tblBodyContainer: '.rGridTblBodyContainer',
             tblBodyRowClassName: '.rGridBodyRows',
+            // tblBodyRowColContainer: 'ul li',
+            tblBodyRowColContainer: 'td',
             tblBodyRowOdd: '#fff',
             tblBodyRowEven: '#98B8D7',
             isApplyOddEvenColor: true,
@@ -74,10 +155,11 @@
         // var _tblHeadRowElement = $(s.tblHeadRow);
         // var _tblBodyRowElements = $(s.tblBodyContainer+' '+s.tblBodyRowClassName);
         // var _tblHeadRowColsElement = $(s.tblHeadRow + ' ' + s.hColCssName);
-        var _tblHeadRowElement = rgElement.find(s.tblHeadContainer+' '+s.tblHeadRow);
-        var _tblBodyRowElements = rgElement.find(s.tblBodyContainer+' '+s.tblBodyRowClassName);
-        var _tblHeadRowColsElement = rgElement.find(s.tblHeadContainer+' '+ s.tblHeadRow + ' ' + s.hColCssName);
-
+        var _tblHeadRowElement = rgElement.find(s.tblHeadContainer + ' ' + s.tblHeadRow);
+        var _tblBodyElement = rgElement.find(s.tblBodyContainer);
+        var _tblBodyRowElements = rgElement.find(s.tblBodyContainer + ' ' + s.tblBodyRowClassName);
+        var _tblHeadRowColsElement = rgElement.find(s.tblHeadContainer + ' ' + s.tblHeadRow + ' ' + s.hColCssName);
+        _colCssName = s.hColCssName;
 
         s.tblBodyRowOdd = s.tblBodyRowOdd.toLowerCase();
         s.tblBodyRowEven = s.tblBodyRowEven.toLowerCase();
@@ -210,7 +292,7 @@
         };
 
         /**
-         * getSelectedRowsData |  It is Public method which is used to get data of the selected rows
+         * getSelectedRowsData |  It is a method which is used to get data of the selected rows
          *
          */
         var _getSelectedRowsData = function() {
@@ -235,6 +317,19 @@
 
 
         /**
+         * _unselectAllRows |  It is a method which is used to unselect all selected rows
+         *
+         */
+        var _unselectAllRows = function() {
+            _tblBodyRowElements.each(function(i, e) {
+                var el = $(e);
+                if (el.hasClass(_selectedRowCss)) {
+                    executeOnClickOfGridBodyRow(el, i);
+                }
+            });
+        };
+
+        /**
          * getSelectedRowsData |  It is Public method which is used to get data of the selected rows
          *
          */
@@ -255,20 +350,12 @@
         };
 
 
-
-
-
         /**
          * unselectAllRows |  It is Public method which is used to unselect all selected rows
          *
          */
         this.unselectAllRows = function() {
-            _tblBodyRowElements.each(function(i, e) {
-                var el = $(e);
-                if (el.hasClass(_selectedRowCss)) {
-                    executeOnClickOfGridBodyRow(el, i);
-                }
-            });
+            _unselectAllRows()
             console.log('unselectAllRows method called!');
         };
 
@@ -279,7 +366,7 @@
          *
          */
         this.selectAllRows = function() {
-            rgObj.unselectAllRows();
+            _unselectAllRows();
 
             _tblBodyRowElements.each(function(i, e) {
                 executeOnClickOfGridBodyRow($(e), i);
@@ -293,124 +380,75 @@
          *
          */
         var _manageSortingCols = function(elment, i) {
-            // _tblHeadRowColsElement.each(function(){
             var colSortName = elment.data('col-name');
             var colSortType = elment.data('sort-type');
+            var sortableCol = elment.data('sortable');
             console.log(elment.data('sort-type'));
-            if (typeof colSortType !== 'undefined') {
-                colSortType = colSortType.toUpperCase();
+            if (typeof sortableCol !== 'undefined' && Boolean(sortableCol) === true) {
+	            //SortType Settings
+	            if (typeof colSortType === 'undefined') {
+	            	colSortType = SORT_UP;
+	            	elment.data('sort-type', SORT_DOWN);
+	            }else{
+	                colSortType = colSortType.toUpperCase();
+	                switch (colSortType) {
+	                    case SORT_UP:
+	                        elment.data('sort-type', SORT_DOWN);
+	                        break;
+	                    case SORT_DOWN:
+	                        elment.data('sort-type', SORT_UP);
+	                        break;
+	                    default:
+	                        elment.data('sort-type', _sortType);
+	                        break
+	                }
+	            }
 
-                switch (colSortType) {
-                    case SORT_UP:
-                        elment.data('sort-type', SORT_DOWN);
-                        break;
-                    case SORT_DOWN:
-                        elment.data('sort-type', SORT_UP);
-                        break;
-                    default:
-                        elment.data('sort-type', _sortType);
-                        break
-                }
-            }
-            console.log(elment.data('sort-type'));
-            if (typeof colSortName !== 'undefined' && colSortName !== '') {
-                if (s.isAjaxSorting) {
+	            //Start Sorting
 
-                } else {
-                    sortOnClientSide(elment, i);
+	            // _unselectAllRows();
+	            //apply odd/even style
+	            if (s.isApplyOddEvenColor) {
+	                // applyOddEvenStyle();
+	            }
+
+	            if (s.isAjaxSorting) {
+	            	if (typeof colSortName !== 'undefined' && colSortName !== '') {
+
+	            	}
+                }else{
+                	sortOnClientSide(elment, i,colSortType);
                 }
+                console.log(_bodyRowData);
             }
-            // });
         };
-
-        var sorting = function(tipTarget, className) {
-            // remove defualt asc and desc class from all others;
-            className.not(tipTarget).removeClass('asc');
-            className.not(tipTarget).removeClass('desc');
-            $('.up_arrow').show();
-            $('.dwn_arrow').show();
-            $('.up_arrow').not($(this)).removeClass('dwn_arrow_only');
-            $('.dwn_arrow').not($(this)).removeClass('up_arrow_only');
-            //****
-            // $(this).find('i.up_arrow').removeClass('up_arrow');
-            // $(this).find('i.dwn_arrow').removeClass('dwn_arrow');
-
-            if (tipTarget.hasClass('asc')) {
-                tipTarget.removeClass('asc');
-                tipTarget.addClass('desc');
-                tipTarget.find('i.up_arrow').show().addClass('dwn_arrow_only');
-                tipTarget.find('i.dwn_arrow').hide();
-                // $(this).find('i').removeClass('up_arrow_only').addClass('dwn_arrow_only');
-            } else if ($(this).hasClass('desc')) {
-                tipTarget.removeClass('desc');
-                tipTarget.addClass('asc');
-                tipTarget.find('i.up_arrow').hide();
-                tipTarget.find('i.dwn_arrow').show().addClass('up_arrow_only');
-                // $(this).find('i').removeClass('dwn_arrow_only').addClass('up_arrow_only');
-            } else {
-                tipTarget.addClass('asc');
-                tipTarget.find('i.up_arrow').show();
-                tipTarget.find('i.dwn_arrow').hide();
-                // $(this).find('i').addClass('up_arrow_only').removeClass('dwn_arrow_only');
-            }
-        }
 
         /**
          * sortOnClientSide |
          *
          */
-        var sortOnClientSide = function(elm, i) {
-            var colSortName = elm.data('col-name');
-            var colSortType = elm.data('sort-type');
-            _tblBodyRowElements.each(function(j, e) {
+        var sortOnClientSide = function(elm, i, colSortType) {
+            var tableBody = _tblBodyElement;
+            var rowCol = tableBody.find(s.tblBodyRowColContainer);
 
-                var el = $(e);
-                el.find(_rColTag).each(function(k, eCols) {
-                    // if(k === i){
-                    console.log(eCols);
-                    $(eCols).each(function(n, col) {
-                        console.log(col.text);
-                    });
-                    // }
-                });
+            var col = elm;
+            var colIndex = col.index();
+            var inverse;
+            if (colSortType === SORT_DOWN) {
+				inverse = true;
+            }else if (colSortType === SORT_UP) {
+            	inverse = false;
+            }
+            rowCol.filter(function() {
+                return $(this).index() === colIndex;
+            }).sortElements(function(a, b) {
+                return $.text([a]) > $.text([b]) ? (inverse ? -1 : 1) : (inverse ? 1 : -1);
+            }, function() {
+                // parentNode is the element we want to move
+                return this.parentNode;
             });
-
-
-            //**********************
-            // sorting($(this), $('.static-tbl-sort'));
-
-            // var table = $(this).parents('table').eq(0)
-            // var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()))
-
-            var tableBody = $(tblBodyContainer);
-            var bodyRows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()))
-            this.asc = !this.asc
-            if (!this.asc) {
-                bodyRows = bodyRows.reverse()
-            }
-            for (var i = 0; i < bodyRows.length; i++) {
-                if (i % 2 == 0) {
-                    $(bodyRows[i]).addClass('bg');
-                } else {
-                    $(bodyRows[i]).removeClass('bg');
-                }
-                tableBody.append(bodyRows[i]);
-            }
-            //**********************
         };
 
-
-        var comparer = function(index) {
-            return function(a, b) {
-                var valA = getCellValue(a, index),
-                    valB = getCellValue(b, index)
-                return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.localeCompare(valB)
-            }
-        };
-
-        var getCellValue = function(row, index) {
-            return $(row).children('td').eq(index).html()
-        };
 
         /**
          * _eventsBindings |  This method will manage events bindings
