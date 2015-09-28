@@ -143,6 +143,19 @@
 					<ul>
 						<li class="rGridHeadRow">
 							<ul>
+								<li>Sr.</li>
+								<li>Name</li>
+								<li>Type</li>
+								<li>Status</li>
+								<li>Actions</li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+				<div class="rGridTblBodyContainer">
+					<ul>
+						<li class="rGridBodyRows" data-id="259" data-type="DG" data-status="1">
+							<ul>
 								<li>1</li>
 								<li>Atif Ali</li>
 								<li>Student</li>
@@ -150,10 +163,6 @@
 								<li>View | Edit | Delete</li>
 							</ul>
 						</li>
-					</ul>
-				</div>
-				<div class="rGridTblBodyContainer">
-					<ul>
 						<li class="rGridBodyRows clr" data-id="256" data-type="DFE" data-status="1">
 							<ul>
 								<li>2</li>
