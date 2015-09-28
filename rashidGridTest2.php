@@ -139,7 +139,7 @@
 			</div>
 			<div class="rGridTblContainer">
 				
-				<div class="rGridTblBodyContainer">
+				<div class="rGridTblHeaderContainer">
 					<ul>
 						<li class="rGridHeadRow">
 							<ul>
@@ -150,6 +150,10 @@
 								<li>View | Edit | Delete</li>
 							</ul>
 						</li>
+					</ul>
+				</div>
+				<div class="rGridTblBodyContainer">
+					<ul>
 						<li class="rGridBodyRows clr" data-id="256" data-type="DFE" data-status="1">
 							<ul>
 								<li>2</li>
@@ -226,6 +230,7 @@
 			// window.rashid.setSelectedRowsData(data);
 			// window.rashid.getSelectedRowsData();
 
+			$('.mainContainerDiv').rashidGrid({bodyRowData: data});
 			$('.mainContainerDiv').rashidGrid({bodyRowData: data});
 		})
 		//**************************

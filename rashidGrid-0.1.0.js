@@ -71,9 +71,12 @@
 
         //local Variables deleration 
         var s = settings;
-        var _tblBodyRowElements = $(s.tblBodyRowClassName);
-        var _tblHeadRowElement = $(s.tblHeadRow);
-        var _tblHeadRowColsElement = $(s.tblHeadRow + ' ' + s.hColCssName);
+        // var _tblHeadRowElement = $(s.tblHeadRow);
+        // var _tblBodyRowElements = $(s.tblBodyContainer+' '+s.tblBodyRowClassName);
+        // var _tblHeadRowColsElement = $(s.tblHeadRow + ' ' + s.hColCssName);
+        var _tblHeadRowElement = rgElement.find(s.tblHeadContainer+' '+s.tblHeadRow);
+        var _tblBodyRowElements = rgElement.find(s.tblBodyContainer+' '+s.tblBodyRowClassName);
+        var _tblHeadRowColsElement = rgElement.find(s.tblHeadContainer+' '+ s.tblHeadRow + ' ' + s.hColCssName);
 
 
         s.tblBodyRowOdd = s.tblBodyRowOdd.toLowerCase();
