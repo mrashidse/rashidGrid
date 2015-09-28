@@ -419,7 +419,10 @@ jQuery.fn.sortElements = (function(){
                 }else{
                 	sortOnClientSide(elment, i,colSortType);
                 }
-                console.log(_bodyRowData);
+
+                // console.log(_bodyRowData);
+                // reIndexSelectedRowInfo();
+                // console.log(_bodyRowData);
             }
         };
 
@@ -451,6 +454,27 @@ jQuery.fn.sortElements = (function(){
 
 
         /**
+         * reIndexSelectedRowInfo | This is a method which is used to reindex selected rows especially for sorting
+         *
+         */
+        var reIndexSelectedRowInfo = function(){
+
+        	$.each(_bodyRowData, function(i){
+        		$(_tblBodyRowElements).filter(_selectedRowCss).each(function(j,e){
+    				debugger;
+        			var el = $(this);
+        			var newRowIndex = el.index();
+        			
+        			if(el.hasClass(_selectedRowCss) === true){
+						// _bodyRowData[i].rowIndex = newRowIndex;
+						popSelectedRowsData(newRowIndex);
+						return false;
+        			}
+        		});
+        	});
+        };
+
+        /**
          * _eventsBindings |  This method will manage events bindings
          *
          */
@@ -469,6 +493,7 @@ jQuery.fn.sortElements = (function(){
              * Table-Body-Row Click Event Perform here
              */
             $(rgElement).on('click', s.tblBodyRowClassName, function() {
+            	debugger;
                 var e = $(this);
                 var eInx = e.index();
                 executeOnClickOfGridBodyRow(e, eInx);
